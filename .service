@@ -1,0 +1,7 @@
+[Unit]
+Description=Record internet radio show (%i)
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/radio-record/%i.env
+ExecStart=%h/bin/record-radio.sh %i

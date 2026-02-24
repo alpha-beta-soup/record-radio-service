@@ -1,0 +1,11 @@
+[Unit]
+Description=Record SnowmanShow every Tuesday at 18:55
+
+[Timer]
+OnCalendar=Tue *-*-* 18:55:00
+Persistent=true
+Unit=radio-record@SnowmanShow.service
+
+[Install]
+WantedBy=timers.target
+EOF
