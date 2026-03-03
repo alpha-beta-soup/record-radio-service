@@ -64,7 +64,7 @@ journalctl --user -u radio-record@SnowmanShow.service
 
 Run without logging in:
 
-```
+```bash
 sudo loginctl enable-linger $USER
 ```
 
