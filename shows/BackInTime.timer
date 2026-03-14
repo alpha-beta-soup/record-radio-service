@@ -1,0 +1,10 @@
+[Unit]
+Description=Record Biff McFly's Back in Time every Thursday at 18:55
+
+[Timer]
+OnCalendar=Thu *-*-* 18:55:00
+Persistent=false
+Unit=radio-record@BackInTime.service
+
+[Install]
+WantedBy=timers.target
