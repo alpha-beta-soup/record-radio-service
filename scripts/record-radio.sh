@@ -12,12 +12,13 @@ LABEL="$1"
 : "${RADIO_DURATION_SECONDS:?RADIO_DURATION_SECONDS is required}"
 
 OUTDIR="${RADIO_OUTDIR:-$HOME/radio-recordings}"
+OUTDIR="${OUTDIR/#\~/$HOME}"
 CODEC="${RADIO_CODEC:-aac}"
 BITRATE="${RADIO_BITRATE:-192k}"
 
 mkdir -p "$OUTDIR"
 
-SAFE_LABEL="$(echo "$LABEL" | tr -cs 'A-Za-z0-9._-+' '_' | sed 's/^_//; s/_$//')"
+SAFE_LABEL="$(echo "$LABEL" | LC_ALL=C tr -cs 'A-Za-z0-9._+-' '_' | sed 's/^_//; s/_$//')"
 ts="$(date +%F_%H-%M)"
 
 case "$CODEC" in

@@ -1,74 +1,90 @@
-## Test a recording
+## Requirements
 
-```bash
-~/bin/record-radio.sh 20 testlabel http://219.88.73.120:88/broadwave.mp3
-```
+- systemd (user units)
+- ffmpeg
 
-## Service
+## Quick start
 
-Create `~/.config/systemd/user/radio-record@.service`
-
-```
-[Unit]
-Description=Record internet radio show (%i)
-
-[Service]
-Type=oneshot
-
-# Per-label config. Must define RADIO_URL and RADIO_DURATION_SECONDS
-EnvironmentFile=%h/.config/radio-record.env
-
-# %i is the "instance" (label) from radio-record@LABEL.service
-ExecStart=%h/bin/record-radio.sh %i
-```
-
-Create the env file `~/.config/radio-record.env`
+1) Create a label env file in shows/ (example: `shows/testshow.env`):
 
 ```bash
 RADIO_URL=http://219.88.73.120:88/broadwave.mp3
-RADIO_DURATION_SECONDS=7500
+RADIO_DURATION_SECONDS=10
 # optional overrides:
-# RADIO_CODEC=aac
+# RADIO_CODEC=aac   # or mp3
 # RADIO_BITRATE=192k
 # RADIO_OUTDIR=~/Music/radio-recordings
 ```
 
-Create `~/.config/systemd/user/radio-record@myshow.timer`
+2) Create a timer for that label in shows/ (example: `shows/testshow.timer`):
 
-```
+```ini
 [Unit]
-Description=Run radio recording (myshow) every Tuesday at 18:55
+Description=Test: record 10 seconds every 1 minute (testshow)
 
 [Timer]
-OnCalendar=Tue *-*-* 18:55:00
+OnBootSec=1min
+OnUnitActiveSec=1min
 Persistent=true
-Unit=radio-record@myshow.service
+Unit=radio-record@testshow.service
 
 [Install]
 WantedBy=timers.target
 ```
 
-Enable it:
+3) Install the label:
+
+```bash
+./scripts/install-radio-label.sh testshow
+```
+
+This installs:
+
+- `~/.config/systemd/user/radio-record@.service`
+- `~/.config/systemd/user/radio-record@testshow.timer`
+- `~/.config/radio-record/testshow.env`
+- `~/bin/record-radio.sh`
+
+4) Enable and start the timer:
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now radio-record@SnowmanShow.timer
-systemctl --user list-timers --all | grep radio-record
+systemctl --user enable --now radio-record@testshow.timer
 ```
 
-Logs:
+## Running a one-off recording
 
 ```bash
-journalctl --user -u radio-record@SnowmanShow.service
+systemctl --user start radio-record@testshow.service
 ```
 
-Run without logging in:
+## Logs
+
+```bash
+journalctl --user -u radio-record@testshow.service
+```
+
+## Output location
+
+Default: `~/radio-recordings`
+
+Override per label via `RADIO_OUTDIR` in the label env file. `~` is supported.
+
+## Uninstall a label
+
+```bash
+./scripts/uninstall-radio-label.sh testshow
+systemctl --user daemon-reload
+```
+
+## Run without logging in
 
 ```bash
 sudo loginctl enable-linger $USER
 ```
 
+## Notes
 
-Notes
-- This assumes you already have the shared template service ~/.config/systemd/user/radio-record@.service and your ~/bin/record-radio.sh in place.
-- Your {label}.timer should not include a hard-coded path; it’s installed as radio-record@{label}.timer and will trigger radio-record@{label}.service.
+- Each label uses its own env file at `~/.config/radio-record/<label>.env`.
+- Repo layout: scripts/ for executables, shows/ for label configs.
+- Timers should refer to `radio-record@<label>.service` (no hard-coded paths).
