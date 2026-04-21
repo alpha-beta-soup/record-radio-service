@@ -111,6 +111,12 @@ To inspect what it activated last:
 systemctl --user status radio-record@testshow.service
 ```
 
+### Tailing a log
+
+```bash
+journalctl --user -fu radio-record@testshow.timer
+```
+
 ## After changing a show config
 
 If you edit `shows/<label>.env` or `shows/<label>.timer`, run install again for that label:

@@ -5,3 +5,7 @@ Description=Record internet radio show (%i)
 Type=oneshot
 EnvironmentFile=%h/.config/radio-record/%i.env
 ExecStart=%h/bin/record-radio.sh %i
+
+# Auto-restart on failure (e.g., network drop)
+Restart=on-failure
+RestartSec=10

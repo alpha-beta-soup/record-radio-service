@@ -18,8 +18,16 @@ BITRATE="${RADIO_BITRATE:-192k}"
 
 mkdir -p "$OUTDIR"
 
-SAFE_LABEL="$(echo "$LABEL" | LC_ALL=C tr -cs 'A-Za-z0-9._+-' '_' | sed 's/^_//; s/_$//')"
 ts="$(date +%F_%H-%M)"
+
+SAFE_LABEL="$(echo "$LABEL" | LC_ALL=C tr -cs 'A-Za-z0-9._+-' '_' | sed 's/^_//; s/_$//')"
+# Use systemd's $SCHEDULED_START_TIME if available, else fallback to now
+if [[ -n "${SCHEDULED_START_TIME:-}" ]]; then
+  # Format: 2026-04-21 18:55:00 NZST
+  ts="$(date -d "$SCHEDULED_START_TIME" +%F_%H-%M)"
+else
+  ts="$(date +%F_%H-%M)"
+fi
 
 case "$CODEC" in
   aac) ext="m4a" ;;
@@ -33,6 +41,7 @@ if [[ "$CODEC" == "aac" ]]; then
   exec ffmpeg -hide_banner -nostdin -loglevel info \
     -t "$RADIO_DURATION_SECONDS" -i "$RADIO_URL" \
     -c:a aac -b:a "$BITRATE" \
+    -movflags +faststart+frag_keyframe+empty_moov \
     "$out"
 else
   exec ffmpeg -hide_banner -nostdin -loglevel info \
