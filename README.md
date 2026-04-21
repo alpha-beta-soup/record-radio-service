@@ -83,6 +83,64 @@ systemctl --user daemon-reload
 sudo loginctl enable-linger $USER
 ```
 
+## Check installed timers
+
+```bash
+systemctl --user list-timers
+```
+
+```
+NEXT                         LEFT        LAST PASSED UNIT                           ACTIVATES                       
+Tue 2026-04-21 18:55:00 NZST 30min left  n/a  n/a    radio-record@SnowmanShow.timer radio-record@SnowmanShow.service
+Thu 2026-04-23 18:55:00 NZST 2 days left n/a  n/a    radio-record@BackInTime.timer  radio-record@BackInTime.service
+
+2 timers listed.
+Pass --all to see loaded but inactive timers, too.
+```
+
+## Check a specific timer
+
+```bash
+systemctl --user status radio-record@testshow.timer
+systemctl --user list-timers --all | grep radio-record@testshow
+```
+
+To inspect what it activated last:
+
+```bash
+systemctl --user status radio-record@testshow.service
+```
+
+## After changing a show config
+
+If you edit `shows/<label>.env` or `shows/<label>.timer`, run install again for that label:
+
+```bash
+./scripts/install-radio-label.sh testshow
+systemctl --user daemon-reload
+systemctl --user restart radio-record@testshow.timer
+```
+
+For env-only changes, restarting the timer is optional, but useful to immediately test:
+
+```bash
+systemctl --user start radio-record@testshow.service
+```
+
+## Troubleshooting
+
+- If a run fails, check both timer and service logs:
+
+	```bash
+	journalctl --user -u radio-record@testshow.timer -n 50 --no-pager
+	journalctl --user -u radio-record@testshow.service -n 50 --no-pager
+	```
+
+- If using `RADIO_CODEC=mp3`, your ffmpeg build must include `libmp3lame`.
+- Output filenames are sanitized from the label (`A-Za-z0-9._+-` kept; others become `_`).
+- Uninstall removes shared files (`radio-record@.service`, `~/bin/record-radio.sh`) only when no labels remain.
+
+
 ## Notes
 
 - Each label uses its own env file at `~/.config/radio-record/<label>.env`.
