@@ -133,6 +133,16 @@ For env-only changes, restarting the timer is optional, but useful to immediatel
 systemctl --user start radio-record@testshow.service
 ```
 
+## Stopping a recording early
+
+To stop an in-progress recording and still get a valid output file, send SIGTERM. `ffmpeg` will finalize the container before exiting:
+
+```bash
+systemctl --user stop radio-record@testshow.service
+```
+
+This works for any label. Do **not** use `kill -9` (SIGKILL) as that kills `ffmpeg` instantly without writing the file trailer, which can corrupt the output.
+
 ## Troubleshooting
 
 - If a run fails, check both timer and service logs:
