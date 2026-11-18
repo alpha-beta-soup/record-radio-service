@@ -60,17 +60,23 @@ out="$OUTDIR/${SAFE_LABEL}_${ts}.${ext}"
 
 if [[ "$CODEC" == "copy" ]]; then
   exec ffmpeg -hide_banner -nostdin -loglevel info \
+    -rw_timeout 10000000 \
+    -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 60 \
     -t "$RADIO_DURATION_SECONDS" -i "$RADIO_URL" \
     -c copy \
     "$out"
 elif [[ "$CODEC" == "aac" ]]; then
   exec ffmpeg -hide_banner -nostdin -loglevel info \
+    -rw_timeout 10000000 \
+    -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 60 \
     -t "$RADIO_DURATION_SECONDS" -i "$RADIO_URL" \
     -c:a aac -b:a "$BITRATE" \
     -movflags +faststart+frag_keyframe+empty_moov \
     "$out"
 else
   exec ffmpeg -hide_banner -nostdin -loglevel info \
+    -rw_timeout 10000000 \
+    -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 60 \
     -t "$RADIO_DURATION_SECONDS" -i "$RADIO_URL" \
     -c:a libmp3lame -b:a "$BITRATE" \
     "$out"

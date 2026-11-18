@@ -162,6 +162,13 @@ This works for any label. Do **not** use `kill -9` (SIGKILL) as that kills `ffmp
 - Output filenames are sanitized from the label (`A-Za-z0-9._+-` kept; others become `_`).
 - `~/bin/record-radio.sh` is a symlink to `scripts/record-radio.sh` in this repo, so
   edits here take effect immediately with no re-install. Don't move the repo.
+- A stalled stream (connection accepted, no data) used to wedge ffmpeg forever:
+  it ignores SIGTERM while blocked on the read, and `Type=oneshot` leaves
+  `TimeoutStartSec` at infinity, so the service sat in `activating` and the timer
+  could not start any later run. `-rw_timeout` now turns that into a non-zero exit
+  after 10s, which `Restart=on-failure` picks up; `-reconnect` rides out brief
+  drops in place; and `TimeoutStartSec=10800` bounds anything both miss. Raise it
+  if any label's `RADIO_DURATION_SECONDS` approaches 3 hours.
 - Uninstall removes shared files (`radio-record@.service`, `~/bin/record-radio.sh`) only when no labels remain.
 
 

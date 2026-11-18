@@ -9,3 +9,9 @@ ExecStart=%h/bin/record-radio.sh %i
 # Auto-restart on failure (e.g., network drop)
 Restart=on-failure
 RestartSec=10
+
+# Type=oneshot defaults this to infinity: a hung ffmpeg would then sit in
+# activating forever, and the timer cannot start a run while one is active, so
+# one stall would cost every later show too. Must exceed the longest
+# RADIO_DURATION_SECONDS of any label (currently 7500) plus reconnect time.
+TimeoutStartSec=10800
