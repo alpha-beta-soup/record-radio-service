@@ -19,6 +19,9 @@ REPO_DIR="${2:-}"
 if [[ -z "$REPO_DIR" ]]; then
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+else
+  # The script is symlinked from here, so the target has to be absolute.
+  REPO_DIR="$(cd "$REPO_DIR" && pwd)"
 fi
 
 TIMER_SRC="${REPO_DIR%/}/shows/${LABEL}.timer"
@@ -45,13 +48,15 @@ mkdir -p "$SYSTEMD_USER_DIR" "$RADIO_ENV_DIR" "$BIN_DIR"
 install -m 0644 "$TIMER_SRC" "$TIMER_DST"
 install -m 0644 "$ENV_SRC"   "$ENV_DST"
 install -m 0644 "$SERVICE_SRC" "$SERVICE_DST"
-install -m 0755 "$SCRIPT_SRC" "$SCRIPT_DST"
+# Symlink rather than copy: editing the repo is then enough, with no second
+# copy to forget about. Keep the repo where it is -- moving it breaks recording.
+ln -sfn "$SCRIPT_SRC" "$SCRIPT_DST"
 
 echo "Installed:"
 echo "  $TIMER_DST"
 echo "  $ENV_DST"
 echo "  $SERVICE_DST"
-echo "  $SCRIPT_DST"
+echo "  $SCRIPT_DST -> $SCRIPT_SRC"
 echo
 echo "Now run:"
 echo "  systemctl --user daemon-reload"

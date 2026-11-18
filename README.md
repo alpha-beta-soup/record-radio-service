@@ -11,8 +11,8 @@
 RADIO_URL=http://219.88.73.120:88/broadwave.mp3
 RADIO_DURATION_SECONDS=10
 # optional overrides:
-# RADIO_CODEC=aac   # or mp3
-# RADIO_BITRATE=192k
+# RADIO_CODEC=copy   # copy (default, no re-encoding) | aac | mp3
+# RADIO_BITRATE=192k  # ignored when RADIO_CODEC=copy
 # RADIO_OUTDIR=~/Music/radio-recordings
 ```
 
@@ -152,8 +152,16 @@ This works for any label. Do **not** use `kill -9` (SIGKILL) as that kills `ffmp
 	journalctl --user -u radio-record@testshow.service -n 50 --no-pager
 	```
 
+- `RADIO_CODEC=copy` is the default: it stores the stream's own bytes with no
+  re-encoding, and ignores `RADIO_BITRATE`. The extension follows the stream
+  (`.mp3` or `.aac`). `aac` and `mp3` re-encode an already-lossy stream and at the
+  default 192k also inflate it -- Woodville streams 56 kbps MP3, so a copy
+  recording is about a third the size with none of the generation loss. Only reach
+  for them if you need a specific output format.
 - If using `RADIO_CODEC=mp3`, your ffmpeg build must include `libmp3lame`.
 - Output filenames are sanitized from the label (`A-Za-z0-9._+-` kept; others become `_`).
+- `~/bin/record-radio.sh` is a symlink to `scripts/record-radio.sh` in this repo, so
+  edits here take effect immediately with no re-install. Don't move the repo.
 - Uninstall removes shared files (`radio-record@.service`, `~/bin/record-radio.sh`) only when no labels remain.
 
 
